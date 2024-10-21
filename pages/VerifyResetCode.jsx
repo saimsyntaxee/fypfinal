@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card"
-import { Button } from "../src/components/ui/button"
-import { Input } from '../src/components/ui/input'
-import { Label } from "../src/components/ui/label"
-import { useNavigate } from "react-router-dom"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card";
+import { Button } from "../src/components/ui/button";
+import { Input } from '../src/components/ui/input';
+import { Label } from "../src/components/ui/label";
+import { useNavigate, useParams } from "react-router-dom";
 
 const apiurl = import.meta.env.VITE_API_URL;
 
 export default function VerifyResetCode() {
-  const { email } = router.query;
+  const { email } = useParams();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);

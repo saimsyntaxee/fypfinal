@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card"
-import { Button } from "../src/components/ui/button"
-import { Input } from '../src/components/ui/input'
-import { Label } from "../src/components/ui/label"
-import { useNavigate } from "react-router-dom"
+import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card";
+import { Button } from "../src/components/ui/button";
+import { Input } from "../src/components/ui/input";
+import { Label } from "../src/components/ui/label";
+import { useNavigate, useParams } from "react-router-dom";
 
 const apiurl = import.meta.env.VITE_API_URL;
 
-
 export default function ResetPasswordConfirm() {
-   const navigate = useNavigate();
-  const { uid, token } = router.query;
+  const navigate = useNavigate();
+  const { uid, token } = useParams(); // Use useParams to get uid and token from the URL
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +22,7 @@ export default function ResetPasswordConfirm() {
         navigate("/");
       }, 3000);
     }
-  }, [success, router]);
+  }, [success, navigate]); // Removed `router` from dependencies since it's not defined
 
   const handleSubmit = async (event) => {
     event.preventDefault();

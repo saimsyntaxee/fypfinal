@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../sr
 import { Input } from '../src/components/ui/input'
 import { Label } from "../src/components/ui/label"
 import { useNavigate ,Link} from "react-router-dom"
+import { Eye, EyeOff } from 'react-feather'; // Import the eye icons from react-feather or any other icon library
 
 
 
@@ -21,6 +22,7 @@ export function RegistrationForm() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -127,15 +129,26 @@ export function RegistrationForm() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                type="password"
-                placeholder="••••••••••"
-                required
-              />
+              <div className="relative flex items-center">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"} // Toggle input type
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className="pr-12" // Added padding-right to make space for the button
+                  required
+                />
+                {/* Eye icon for show/hide password */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center px-43" // Adjusting position and spacing
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.password && <p>{errors.password}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>

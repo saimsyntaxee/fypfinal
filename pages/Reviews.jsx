@@ -1,12 +1,13 @@
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Alert, AlertDescription, AlertTitle } from "@/components/ui
+import { Alert, AlertDescription, AlertTitle } from "../src/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card"; // Relative import
+
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useEffect, useState } from 'react';
 
 
-
-
-export function Reviews({ restaurantId }) {
+export  default function Reviews({ restaurantId }) {
     const [reviews, setReviews] = useState([]);
   
     useEffect(() => {

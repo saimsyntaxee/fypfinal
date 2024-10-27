@@ -4,7 +4,8 @@ import { Button } from "../src/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card"
 import { Input } from '../src/components/ui/input'
 import { Label } from "../src/components/ui/label"
-import { useNavigate ,Link} from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
+import { Eye, EyeOff } from 'react-feather'; // Import the eye icons from react-feather or any other icon library
 
 
 const apiurl = import.meta.env.VITE_API_URL;
@@ -21,6 +22,9 @@ export function LoginForm() {
     access: typeof window !== 'undefined' ? localStorage.getItem("access_token") : null,
     refresh: typeof window !== 'undefined' ? localStorage.getItem("refresh_token") : null
   });
+
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+
 
   const navigate = useNavigate();
 
@@ -65,7 +69,7 @@ export function LoginForm() {
 
         if (response.ok) {
           const { access, refresh } = await response.json();
-          const expiryTime = new Date().getTime() + 24 * 60 * 60 * 1000; 
+          const expiryTime = new Date().getTime() + 24 * 60 * 60 * 1000;
           setTokens({ access, refresh });
           localStorage.setItem("access_token", access);
           localStorage.setItem("refresh_token", refresh);
@@ -113,15 +117,28 @@ export function LoginForm() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative flex items-center">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"} // Toggle input type
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className="pr-12" // Added padding-right to make space for the button
+                  required
+                />
+                {/* Eye icon for show/hide password */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center px-43" // Adjusting position and spacing
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+
+
               {errors.password && <p>{errors.password}</p>}
             </div>
             {serverError && <p>{serverError}</p>}

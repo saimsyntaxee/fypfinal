@@ -1,49 +1,53 @@
 import { useState, useEffect } from "react";
-
-import { Button } from "../src/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card"
-import { Input } from '../src/components/ui/input'
-import { Label } from "../src/components/ui/label"
-import { useNavigate, Link } from "react-router-dom"
-import { Eye, EyeOff } from 'react-feather'; // Import the eye icons from react-feather or any other icon library
-
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "../src/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card";
+import { Input } from '../src/components/ui/input';
+import { Label } from "../src/components/ui/label";
+import { Eye, EyeOff } from 'react-feather'; 
 
 const apiurl = import.meta.env.VITE_API_URL;
 
 export function LoginForm() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [tokens, setTokens] = useState({
     access: typeof window !== 'undefined' ? localStorage.getItem("access_token") : null,
     refresh: typeof window !== 'undefined' ? localStorage.getItem("refresh_token") : null
   });
-
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
-
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    checkTokenExpiry();
+
+    const tokenExpiryInterval = setInterval(() => {
+      checkTokenExpiry();
+    }, 1000 * 60); // Check every minute
+
+    return () => clearInterval(tokenExpiryInterval); // Clean up interval on component unmount
+  }, []);
+
+  const checkTokenExpiry = () => {
     const tokenExpiry = localStorage.getItem("token_expiry");
     if (tokenExpiry && new Date().getTime() > tokenExpiry) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("token_expiry");
-      setTokens({ access: null, refresh: null });
+      handleLogout();
     }
-  }, []);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("token_expiry");
+    setTokens({ access: null, refresh: null });
+    navigate("/login");
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const validate = () => {
@@ -121,28 +125,25 @@ export function LoginForm() {
                 <Input
                   id="password"
                   name="password"
-                  type={showPassword ? "text" : "password"} // Toggle input type
+                  type={showPassword ? "text" : "password"} 
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="pr-12" // Added padding-right to make space for the button
+                  className="pr-12" 
                   required
                 />
-                {/* Eye icon for show/hide password */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(prev => !prev)}
-                  className="absolute inset-y-0 right-0 flex items-center px-43" // Adjusting position and spacing
+                  className="absolute inset-y-0 right-0 flex items-center px-3"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-
-
               {errors.password && <p>{errors.password}</p>}
             </div>
             {serverError && <p>{serverError}</p>}
-            <Button type="submit" className="w-full" disabled={Object.keys(errors).length > 0}>
+            <Button type="submit" className="w-full">
               Login
             </Button>
             <Button variant="outline" className="w-full">

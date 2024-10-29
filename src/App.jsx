@@ -13,6 +13,10 @@ import { LoginForm } from "../pages/LoginForm";
 import Reviews from "../pages/Reviews";
 import OperatingHours from "../pages/OperatingHours";
 
+// import Menu from "../pages/Menu";
+import Reviews from "../pages/Reviews";
+import OperatingHours from "../pages/OperatingHours";
+
 
 export default function App() {
   return (

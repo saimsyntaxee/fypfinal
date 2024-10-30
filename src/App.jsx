@@ -9,9 +9,11 @@ import ResetPasswordConfirm from "../pages/ResetPasswordConfirm";
 import ResetEmail from "../pages/ResetEmail";
 import { RegistrationForm } from "../pages/RegistrationForm";
 import { LoginForm } from "../pages/LoginForm";
-// import Menu from "../pages/Menu";
+import Menu from "../pages/Menu";
 import Reviews from "../pages/Reviews";
 import OperatingHours from "../pages/OperatingHours";
+import Resturants from "../pages/RestaurantList";
+
 
 export default function App() {
   return (
@@ -28,7 +30,8 @@ export default function App() {
           <Route path="/reset-email" element={<ResetEmail />} />
           <Route path="/reviews/:restaurantId" element={<Reviews />} />
           <Route path="/operating-hours" element={<OperatingHours />} />
-          {/* <Route path="/menu/:restaurantId" element={<Menu />} /> */}
+          <Route path="/menu/:restaurantId" element={<Menu />} />
+          <Route path="/resturant_list" element={<Resturants/>}/>
       </Routes>
     </BrowserRouter>
   )

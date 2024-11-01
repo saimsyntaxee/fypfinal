@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card"
-import { Button } from "../src/components/ui/button"
-import { Input } from '../src/components/ui/input'
-import { Label } from "../src/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card";
+import { Button } from "../src/components/ui/button";
+import { Input } from '../src/components/ui/input';
+import { Label } from "../src/components/ui/label";
 
 const apiurl = import.meta.env.VITE_API_URL;
 
@@ -14,26 +15,27 @@ export default function Account() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // const token = localStorage.getItem('access_token');
-    // if (!token) {
-    //   navigate('/login');
-    //   return;
-    // }
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`${apiurl}/auth/users/me/`, {
+        const response = await axios.get(`${apiurl}/auth/users/me/`, {
           headers: { Authorization: `JWT ${token}` },
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setUserData(data);
-        } else {
-          throw new Error('Failed to fetch user data');
+        if (response.status === 200) {
+          setUserData(response.data);
         }
       } catch (error) {
-        setServerError('An error occurred while fetching user data');
+        if (error.response) {
+          setServerError(error.response.data.detail || 'An error occurred while fetching user data');
+        } else {
+          setServerError('An error occurred. Please try again.');
+        }
       }
     };
 
@@ -48,20 +50,20 @@ export default function Account() {
   const handleSave = async () => {
     const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`${apiurl}/auth/users/me/`, {
-        method: 'PUT',
+      const response = await axios.put(`${apiurl}/auth/users/me/`, userData, {
         headers: { Authorization: `JWT ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
       });
 
-      if (response.ok) {
+      if (response.status === 200) {
         setSuccessMessage('Profile updated successfully');
         setServerError('');
-      } else {
-        throw new Error('Failed to update profile');
       }
     } catch (error) {
-      setServerError('An error occurred while updating the profile');
+      if (error.response) {
+        setServerError(error.response.data.detail || 'An error occurred while updating the profile');
+      } else {
+        setServerError('An error occurred. Please try again.');
+      }
     }
   };
 

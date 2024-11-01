@@ -1,6 +1,5 @@
-
-import { Button } from "./ui/button"
-
+import { Button } from "../ui/button";
+import React from "react";
 export default function Cities() {
   return (
     <div className="flex flex-col items-start justify-start w-full">

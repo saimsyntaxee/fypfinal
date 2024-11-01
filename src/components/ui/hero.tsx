@@ -1,41 +1,89 @@
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
+
+const apiurl = import.meta.env.VITE_API_URL;
 
 export default function Hero() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [cities, setCities] = useState([
-    { id: 1, name: "New York" },
-    { id: 2, name: "Los Angeles" },
-    { id: 3, name: "Chicago" },
-    { id: 4, name: "Houston" },
-    { id: 5, name: "Phoenix" },
-    { id: 6, name: "Philadelphia" },
-    { id: 7, name: "San Antonio" },
-    { id: 8, name: "San Diego" },
-    { id: 9, name: "Dallas" },
-    { id: 10, name: "San Jose" },
-  ]);
-  
+  const [cities, setCities] = useState([]);
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
     address: "",
     city: null,
   });
+  const [userLocation, setUserLocation] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get(`${apiurl}/restromap/city/`);
+        setCities(response.data);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      }
+    };
+
+    const fetchUserLocation = async () => {
+      const token = localStorage.getItem('access_token');
+      try {
+        const response = await axios.get(`${apiurl}/restromap/location/`, {
+          headers: { Authorization: `JWT ${token}` },
+        });
+        if (response.data) {
+          setUserLocation(response.data);
+          setLocation({
+            latitude: response.data.latitude,
+            longitude: response.data.longitude,
+            address: response.data.address,
+            city: response.data.city.id,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user location:", error);
+      }
+    };
+
+    fetchCities();
+    fetchUserLocation();
+  }, []);
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        position => {
+        async (position) => {
           console.log("Geolocation successful:", position);
-          setLocation({
-            ...location,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
+          const { latitude, longitude } = position.coords;
+
+          try {
+            const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json`, {
+              params: {
+                q: `${latitude},${longitude}`,
+                key: '26f8234e2ad747c5b2e6a526089c9f9f', // Replace with your OpenCage API key
+              },
+            });
+
+            if (response.data.status.code === 200) {
+              const address = response.data.results[0].formatted;
+              setLocation((prevLocation) => ({
+                ...prevLocation,
+                latitude,
+                longitude,
+                address,
+              }));
+            } else {
+              console.error("Geocoding error:", response.data.status.message);
+              alert("Unable to retrieve your address. Please try again.");
+            }
+          } catch (error) {
+            console.error("Geocoding error:", error);
+            alert("An error occurred while retrieving your address.");
+          }
         },
-        error => {
+        (error) => {
           console.error("Geolocation error:", error);
           alert("Unable to retrieve your location. Please allow location access.");
         }
@@ -47,31 +95,42 @@ export default function Hero() {
 
   const handleCitySelect = (e) => {
     const selectedCityId = e.target.value;
-    setLocation({ ...location, city: selectedCityId });
+    setLocation((prevLocation) => ({
+      ...prevLocation,
+      city: selectedCityId,
+    }));
   };
 
-  const handleSaveLocation = () => {
-    console.log("Location data to be sent:", location);
-    fetch("http://127.0.0.1:8000/restromap/location/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(location),
-    })
-      .then(response => {
-        if (response.ok) {
-          alert("Location saved successfully");
-          setModalOpen(false);
-        } else {
-          alert("Failed to save location");
-          console.error("Error response:", response);
-        }
-      })
-      .catch(error => {
-        console.error("Error posting location:", error);
-        alert("An error occurred while saving your location.");
+  const handleSaveLocation = async () => {
+    const token = localStorage.getItem('access_token');
+    setLoading(true);
+    try {
+      const response = await axios.get(`${apiurl}/restromap/location/`, {
+        headers: { Authorization: `JWT ${token}` },
       });
+
+      if (response.data && response.data.latitude && response.data.longitude) {
+        // Update existing location
+        if (response.data.latitude !== location.latitude || response.data.longitude !== location.longitude) {
+          await axios.put(`${apiurl}/restromap/location/${response.data.id}/`, location, {
+            headers: { Authorization: `JWT ${token}` },
+          });
+          alert("Location updated successfully");
+        }
+      } else {
+        // Create new location
+        await axios.post(`${apiurl}/restromap/location/`, location, {
+          headers: { Authorization: `JWT ${token}` },
+        });
+        alert("Location saved successfully");
+      }
+      setModalOpen(false);
+    } catch (error) {
+      console.error("Error saving location:", error);
+      alert("An error occurred while saving your location.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,9 +160,9 @@ export default function Hero() {
             
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-              <select id="city" className="w-full mt-1 border rounded p-2" onChange={handleCitySelect}>
+              <select id="city" className="w-full mt-1 border rounded p-2" onChange={handleCitySelect} value={location.city || ""}>
                 <option value="">Select your city</option>
-                {cities.map(city => (
+                {cities.map((city) => (
                   <option key={city.id} value={city.id}>{city.name}</option>
                 ))}
               </select>
@@ -115,7 +174,9 @@ export default function Hero() {
 
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-              <Button variant="default" onClick={handleSaveLocation}>OK</Button>
+              <Button variant="default" onClick={handleSaveLocation} disabled={loading}>
+                {loading ? "Saving..." : "OK"}
+              </Button>
             </div>
           </div>
         </div>

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Button } from "../src/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../src/components/ui/card"
-import { Input } from '../src/components/ui/input'
-import { Label } from "../src/components/ui/label"
-import { useNavigate } from "react-router-dom"
+import { Button } from "../src/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card";
+import { Input } from '../src/components/ui/input';
+import { Label } from "../src/components/ui/label";
+import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const apiurl = import.meta.env.VITE_API_URL;
 
@@ -11,28 +12,28 @@ export default function ResetPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${apiurl}/send_reset_code/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (response.ok) {
+      const response = await axios.post(`${apiurl}/send_reset_code/`, { email });
+      if (response.status === 200) {
         navigate(`/verify-reset-code/${email}`);
       } else {
         setError("Failed to send reset code.");
       }
     } catch (error) {
-      setError("An error occurred while processing the password reset request.");
+      if (error.response && error.response.data && error.response.data.detail) {
+        setError(error.response.data.detail);
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError("An error occurred while processing the password reset request.");
+      }
     } finally {
       setLoading(false);
     }

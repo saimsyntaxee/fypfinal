@@ -22,6 +22,7 @@ export default function RestaurantList() {
     const fetchCities = async () => {
       try {
         const response = await axios.get(`${apiurl}/restromap/city/`);
+        console.log("Cities fetched:", response.data); // Log the fetched cities
         setCities(response.data);
       } catch (error) {
         console.error("Error fetching cities:", error);
@@ -41,6 +42,7 @@ export default function RestaurantList() {
     try {
       const url = `${apiurl}/restromap/search_by_dish/?city=${selectedCity}&search_term=${dishName}`;
       const response = await axios.get(url);
+      console.log("Restaurants fetched:", response.data); // Log the fetched restaurants
       if (response.status === 200) {
         setRestaurants(response.data);
       } else {
